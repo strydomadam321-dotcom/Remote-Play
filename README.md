@@ -90,6 +90,7 @@ Open `https://YOUR-APP.onrender.com` in **Chrome or Edge**, enter the key, then 
 | Click the video | Goes fullscreen and captures the mouse. From here every key goes to the PC |
 | **Esc** (tap) | Sent to the game, e.g. opens Minecraft's pause menu |
 | **Esc** (hold) | Leaves fullscreen and releases the mouse |
+| **Ctrl + Alt** | Gives the mouse back to the laptop and stays in fullscreen. Click the video to capture it again |
 | Screen menu | Switches which monitor you see. No reconnect needed |
 | Quality menu | Use 540p/720p on weak wifi and 1080p on good connections |
 | Mouse: Desktop | Shows a normal pointer that clicks where you point. Good for the Windows desktop |

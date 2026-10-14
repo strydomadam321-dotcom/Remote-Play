@@ -1,4 +1,4 @@
 {
-  "serverUrl": "wss://YOUR-APP.onrender.com/ws",
+  "serverUrl": "https://YOUR-APP.onrender.com",
   "accessKey": "PASTE-THE-ACCESS_KEY-FROM-RENDER-HERE"
 }

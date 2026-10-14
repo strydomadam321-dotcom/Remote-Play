@@ -3,7 +3,7 @@
 // The window (host.html) handles screen capture and WebRTC; this process
 // injects the keyboard/mouse input it receives.
 
-const { app, BrowserWindow, ipcMain, desktopCapturer, screen, powerSaveBlocker, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, screen, powerSaveBlocker, dialog, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -22,6 +22,8 @@ if (!app.requestSingleInstanceLock()) process.exit(0);
 const input = require('./input');
 
 let win = null;
+let tray = null;
+let quitting = false;
 let config = null;
 let displaySleepBlocker = null;
 let screenSources = new Map(); // source id -> physical rect
@@ -32,9 +34,24 @@ function loadConfig() {
     throw new Error('config.json is missing. Copy config.example.json to config.json and fill it in.');
   }
   const cfg = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (!/^wss?:\/\//.test(cfg.serverUrl || '')) throw new Error('config.json: serverUrl must start with wss:// (or ws:// for local testing).');
+  cfg.serverUrl = normalizeServerUrl(cfg.serverUrl);
   if (typeof cfg.accessKey !== 'string' || cfg.accessKey.length < 16) throw new Error('config.json: accessKey must be the ACCESS_KEY from your server.');
   return cfg;
+}
+
+// Accept the plain website address too: https://x.onrender.com -> wss://x.onrender.com/ws
+function normalizeServerUrl(value) {
+  let url;
+  try {
+    url = new URL(String(value || '').trim());
+  } catch {
+    throw new Error('config.json: serverUrl should be your Render address, like https://your-app.onrender.com');
+  }
+  const protocols = { 'https:': 'wss:', 'wss:': 'wss:', 'http:': 'ws:', 'ws:': 'ws:' };
+  if (!protocols[url.protocol]) throw new Error('config.json: serverUrl must start with https://');
+  url.protocol = protocols[url.protocol];
+  if (url.pathname === '/' || url.pathname === '') url.pathname = '/ws';
+  return url.toString();
 }
 
 async function listScreens() {
@@ -68,6 +85,7 @@ app.whenReady().then(() => {
     width: 560,
     height: 460,
     title: 'Remote Play host',
+    icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
     backgroundColor: '#0b0d10',
     webPreferences: {
@@ -82,12 +100,50 @@ app.whenReady().then(() => {
   // Never navigate the window anywhere else.
   win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+
+  // Closing the window only hides it; the host keeps streaming from the tray.
+  win.on('close', (e) => {
+    if (quitting) return;
+    e.preventDefault();
+    win.hide();
+  });
+
+  tray = new Tray(path.join(__dirname, 'icon.ico'));
+  tray.on('click', showWindow);
+  buildTrayMenu();
+  setTrayStatus('Starting…');
 });
 
-app.on('window-all-closed', () => {
+function showWindow() {
+  if (!win) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+function setTrayStatus(status) {
+  if (!tray) return;
+  tray.setToolTip(`Remote Play: ${status}`.slice(0, 127));
+}
+
+function buildTrayMenu() {
+  const icon = nativeImage.createFromPath(path.join(__dirname, 'icon.ico')).resize({ width: 16, height: 16 });
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'Remote Play', icon, click: showWindow },
+    { type: 'separator' },
+    { label: 'Quit', click: () => app.quit() },
+  ]));
+}
+
+// Double-clicking the shortcut again just brings the running host back.
+app.on('second-instance', showWindow);
+
+app.on('before-quit', () => {
+  quitting = true;
   input.releaseAll();
-  app.quit();
 });
+
+app.on('window-all-closed', () => app.quit());
 
 // Only trust messages from our own window.
 const fromWin = (e) => win && e.sender === win.webContents;
@@ -101,6 +157,10 @@ ipcMain.on('active-screen', (e, sourceId) => {
 
 ipcMain.on('input', (e, msg) => {
   if (fromWin(e)) input.handle(msg);
+});
+
+ipcMain.on('status', (e, text) => {
+  if (fromWin(e) && typeof text === 'string') setTrayStatus(text);
 });
 
 ipcMain.on('release-all', (e) => {

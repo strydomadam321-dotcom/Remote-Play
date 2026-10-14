@@ -30,6 +30,7 @@ function log(text) {
 function setRow(id, kind, text) {
   $(`${id}-dot`).className = `dot ${kind}`;
   $(id).textContent = text;
+  host.setStatus(`${$('server').textContent} · ${$('viewer').textContent}`);
 }
 
 // ---------------------------------------------------------------------------

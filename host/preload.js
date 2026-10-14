@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('host', {
   input: (msg) => ipcRenderer.send('input', msg),
   releaseAll: () => ipcRenderer.send('release-all'),
   setStreaming: (on) => ipcRenderer.send('streaming', !!on),
+  setStatus: (text) => ipcRenderer.send('status', String(text)),
 });

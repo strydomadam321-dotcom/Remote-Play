@@ -136,8 +136,7 @@ function updateUi() {
       });
     case 'live':
       if (mode() === 'game' && !locked) {
-        const esc = navigator.keyboard?.lock ? 'Hold Esc to leave fullscreen.' : 'Esc releases the mouse.';
-        return setOverlay(`Click to play. ${esc}`, null, null, true);
+        return setOverlay('Click to play. Press Ctrl + Alt to get your mouse back.', null, null, true);
       }
       return setOverlay('');
   }
@@ -423,6 +422,11 @@ window.addEventListener('keydown', (e) => {
   if (!capturingKeys() || !e.code) return;
   e.preventDefault();
   e.stopPropagation();
+  // Ctrl+Alt gives the mouse back to this computer (like a virtual machine).
+  if (isLocked() && e.ctrlKey && e.altKey && /^(Control|Alt)/.test(e.code)) {
+    releaseMouse();
+    return;
+  }
   if (e.code === 'Escape') state.lastEscAt = performance.now();
   state.pressedKeys.add(e.code);
   sendInput({ t: 'kd', c: e.code });

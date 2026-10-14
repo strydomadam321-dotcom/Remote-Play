@@ -1,3 +1,4 @@
 node_modules/
 host/config.json
 .env*
+.claude/
