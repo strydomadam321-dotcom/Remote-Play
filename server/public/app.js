@@ -10,6 +10,7 @@ const els = {
   overlay: $('overlay'), overlayText: $('overlay-text'), overlayBtn: $('overlay-btn'),
   statusDot: $('status-dot'), statusText: $('status-text'), stats: $('stats'),
   screen: $('screen-select'), quality: $('quality-select'), mouseMode: $('mouse-mode'),
+  sens: $('sens'), sensValue: $('sens-value'),
   fullscreen: $('fullscreen-btn'), signOut: $('disconnect-btn'),
 };
 
@@ -35,7 +36,7 @@ function forgetKey() {
   storageDel(localStorage, KEY_STORE);
 }
 
-const prefs = Object.assign({ quality: '720:6', mouseMode: 'game' },
+const prefs = Object.assign({ quality: '720:6', mouseMode: 'game', sensitivity: 1 },
   (() => { try { return JSON.parse(storageGet(localStorage, PREFS_STORE)) || {}; } catch { return {}; } })());
 function savePrefs() { storageSet(localStorage, PREFS_STORE, JSON.stringify(prefs)); }
 
@@ -60,6 +61,7 @@ const state = {
   lastEscAt: 0,
   expectUnlock: false,
   wheel: { x: 0, y: 0, at: 0 },
+  moveRemainder: { x: 0, y: 0 }, // sub-pixel movement left over after scaling
   prevStats: null,
 };
 
@@ -503,7 +505,17 @@ document.addEventListener('mousemove', (e) => {
   }
   if (!isLive()) return;
   if (isLocked()) {
-    if (e.movementX || e.movementY) sendMouse({ t: 'mm', x: e.movementX, y: e.movementY });
+    // Scale by the sensitivity slider. Keep the fractions so slow, low-sensitivity
+    // movements still add up instead of rounding away to nothing.
+    const k = Number(els.sens.value) || 1;
+    const r = state.moveRemainder;
+    r.x += e.movementX * k;
+    r.y += e.movementY * k;
+    const dx = Math.trunc(r.x);
+    const dy = Math.trunc(r.y);
+    r.x -= dx;
+    r.y -= dy;
+    if (dx || dy) sendMouse({ t: 'mm', x: dx, y: dy });
   } else if (mode() === 'desktop' && !inToolbar(e)) {
     const p = videoPoint(e);
     if (p) sendMouse({ t: 'ma', x: p.x, y: p.y });
@@ -560,6 +572,18 @@ els.mouseMode.addEventListener('change', () => {
   els.video.focus();
   updateUi();
 });
+
+function showSensitivity() {
+  els.sensValue.textContent = `${Number(els.sens.value).toFixed(2)}×`;
+}
+els.sens.value = String(Math.min(3, Math.max(0.25, Number(prefs.sensitivity) || 1)));
+showSensitivity();
+els.sens.addEventListener('input', () => {
+  showSensitivity();
+  prefs.sensitivity = Number(els.sens.value);
+  savePrefs();
+});
+els.sens.addEventListener('change', () => els.video.focus());
 
 els.signOut.addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen();
