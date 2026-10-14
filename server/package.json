@@ -1,0 +1,17 @@
+{
+  "name": "remote-play-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Signaling server and browser viewer for Remote Play",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "ws": "^8.18.0"
+  }
+}

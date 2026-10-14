@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ws: wss:">
+  <title>Remote Play host</title>
+  <style>
+    :root { --bg:#0b0d10; --panel:#14181d; --border:#2a313b; --text:#e6e9ee; --muted:#8b95a3; --ok:#3ecf8e; --warn:#f5b84b; --bad:#ef5b5b; color-scheme: dark; }
+    html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font:13px/1.45 system-ui, "Segoe UI", sans-serif; }
+    body { display:flex; flex-direction:column; gap:10px; padding:14px; box-sizing:border-box; }
+    h1 { margin:0; font-size:16px; }
+    .rows { display:grid; grid-template-columns:auto 1fr; gap:6px 14px; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px; }
+    .rows dt { color:var(--muted); }
+    .rows dd { margin:0; font-variant-numeric:tabular-nums; }
+    .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:var(--muted); }
+    .ok { background:var(--ok); } .warn { background:var(--warn); } .bad { background:var(--bad); }
+    #log { flex:1; min-height:0; overflow:auto; margin:0; padding:10px; background:var(--panel); border:1px solid var(--border); border-radius:10px; color:var(--muted); font:12px/1.5 ui-monospace, Consolas, monospace; white-space:pre-wrap; }
+    .hint { color:var(--muted); margin:0; }
+  </style>
+</head>
+<body>
+  <h1>Remote Play host</h1>
+  <dl class="rows">
+    <dt>Server</dt><dd><i id="server-dot" class="dot"></i><span id="server">Starting…</span></dd>
+    <dt>Viewer</dt><dd><i id="viewer-dot" class="dot"></i><span id="viewer">Nobody connected</span></dd>
+    <dt>Sending</dt><dd id="sending">–</dd>
+    <dt>Encoder</dt><dd id="encoder">–</dd>
+  </dl>
+  <p class="hint">You can minimize this window. Closing it stops remote access.</p>
+  <pre id="log"></pre>
+  <script src="host.js"></script>
+</body>
+</html>

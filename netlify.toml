@@ -1,0 +1,4 @@
+# Used when the site is deployed from a Git repo. (For drag-and-drop deploys,
+# drag the server/public folder itself instead of this whole folder.)
+[build]
+  publish = "server/public"

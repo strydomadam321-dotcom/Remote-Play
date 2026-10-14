@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: remote-play
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      # Render generates a long random key. Copy it from the dashboard into host/config.json.
+      - key: ACCESS_KEY
+        generateValue: true
+      # Optional but strongly recommended for library/school wifi (see README).
+      - key: CF_TURN_KEY_ID
+        sync: false
+      - key: CF_TURN_API_TOKEN
+        sync: false

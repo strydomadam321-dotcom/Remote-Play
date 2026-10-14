@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Remote Play</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="login" class="login">
+    <form id="login-form" class="card" autocomplete="on">
+      <h1>Remote Play</h1>
+      <p class="muted">Stream your PC to this browser.</p>
+      <label for="key">Access key</label>
+      <input id="key" name="password" type="password" autocomplete="current-password" required>
+      <label class="check"><input id="remember" type="checkbox"> Remember on this device</label>
+      <button id="login-btn" type="submit">Connect</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </main>
+
+  <section id="stage" class="stage" hidden>
+    <header id="bar" class="bar">
+      <span class="status"><i id="status-dot" class="dot"></i><span id="status-text">Connecting…</span></span>
+      <label>Screen <select id="screen-select" disabled></select></label>
+      <label>Quality
+        <select id="quality-select">
+          <option value="540:3">540p · 3 Mbps (weak wifi)</option>
+          <option value="720:6">720p · 6 Mbps</option>
+          <option value="1080:10">1080p · 10 Mbps</option>
+          <option value="1080:20">1080p · 20 Mbps</option>
+        </select>
+      </label>
+      <label>Mouse
+        <select id="mouse-mode">
+          <option value="game">Game (captured)</option>
+          <option value="desktop">Desktop (pointer)</option>
+        </select>
+      </label>
+      <span id="stats" class="stats"></span>
+      <span class="spacer"></span>
+      <button id="fullscreen-btn" type="button">Fullscreen</button>
+      <button id="disconnect-btn" type="button" class="ghost">Sign out</button>
+    </header>
+    <div class="view">
+      <video id="video" autoplay playsinline muted tabindex="0"></video>
+      <div id="overlay" class="overlay">
+        <p id="overlay-text"></p>
+        <button id="overlay-btn" type="button" hidden></button>
+      </div>
+    </div>
+  </section>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
